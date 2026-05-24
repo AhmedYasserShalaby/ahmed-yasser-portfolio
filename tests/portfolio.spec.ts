@@ -6,8 +6,8 @@ test("home renders the motion portfolio shell", async ({ page }) => {
   await page.goto(`${base}/`);
 
   await expect(page.getByRole("heading", { name: /Messy problems, working systems/i })).toBeVisible();
-  await expect(page.getByTestId("dragon-guide")).toBeVisible();
-  await expect(page.locator("[data-dragon-target]:visible")).toHaveCount(7);
+  await expect(page.getByTestId("goku-companion")).toBeVisible();
+  await expect(page.locator(".orbit-system")).toBeVisible();
   await expect(page.locator(".noise-layer")).toBeVisible();
   await expect(page.locator("canvas.data-field")).toBeVisible();
 
@@ -24,23 +24,22 @@ test("home renders the motion portfolio shell", async ({ page }) => {
   }
 });
 
-test("dragon guide navigates and powers homepage proof", async ({ page }) => {
+test("goku companion reacts to clicks", async ({ page }) => {
   await page.goto(`${base}/`);
 
-  await page.getByRole("button", { name: /Jump to Namek/i }).click();
-  await page.waitForURL(/#about$/);
-  await expect(page.locator("#about")).toBeInViewport();
+  const goku = page.getByTestId("goku-companion");
+  await expect(goku).toBeVisible();
 
-  await page.getByRole("button", { name: /Activate Beerus/i }).click();
-  await expect(page.getByTestId("dragon-proof-panel")).toBeVisible();
+  // Speech bubble should appear with section commentary
+  await expect(page.locator(".goku-speech.is-visible")).toBeVisible();
 
-  await page.getByRole("button", { name: /Activate Yardrat/i }).click();
-  await page.waitForURL(/#work$/);
-  await expect(page.locator('[data-project-slug="ecommerce-cloud-data-platform"]')).toHaveClass(/dragon-boost/);
+  // Click Goku to trigger super saiyan
+  await page.getByRole("button", { name: /Interact with Goku/i }).click();
+  await expect(goku).toHaveClass(/is-super-saiyan/);
 
-  await page.getByRole("button", { name: /Activate Supreme Kai/i }).click();
-  await page.waitForURL(/#contact$/);
-  await expect(page.locator("#contact")).toBeInViewport();
+  // Click again for funny quote
+  await page.getByRole("button", { name: /Interact with Goku/i }).click();
+  await expect(page.locator(".goku-speech.is-visible")).toBeVisible();
 });
 
 test("project routes render case studies", async ({ page }) => {

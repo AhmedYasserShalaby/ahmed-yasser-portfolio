@@ -56,7 +56,7 @@ export function WorkSection() {
   const [previewSource, setPreviewSource] = useState<PreviewSource>(null);
   const [activePreviewIndex, setActivePreviewIndex] = useState(0);
   const [transition, setTransition] = useState<TransitionState | null>(null);
-  const [boostedProjectSlug, setBoostedProjectSlug] = useState<string | null>(null);
+
   const sectionRef = useRef<HTMLElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
@@ -78,40 +78,6 @@ export function WorkSection() {
       activePreviewFrames.length > 1
   );
 
-  useEffect(() => {
-    let clearBoostTimeout: ReturnType<typeof setTimeout> | null = null;
-
-    function onBoostProject(event: Event) {
-      const slug = (event as CustomEvent<{ slug?: string }>).detail?.slug;
-      const project = projects.find((item) => item.slug === slug);
-
-      if (!project) {
-        return;
-      }
-
-      setBoostedProjectSlug(project.slug);
-
-      window.setTimeout(() => {
-        document.querySelector(`[data-project-slug="${project.slug}"]`)?.scrollIntoView({
-          behavior: reducedMotion ? "auto" : "smooth",
-          block: "center"
-        });
-      }, 80);
-
-      if (clearBoostTimeout) {
-        clearTimeout(clearBoostTimeout);
-      }
-      clearBoostTimeout = setTimeout(() => setBoostedProjectSlug(null), 4600);
-    }
-
-    window.addEventListener("dragonGuideBoostProject", onBoostProject);
-    return () => {
-      window.removeEventListener("dragonGuideBoostProject", onBoostProject);
-      if (clearBoostTimeout) {
-        clearTimeout(clearBoostTimeout);
-      }
-    };
-  }, [reducedMotion]);
 
   // Debounce the project change
   useEffect(() => {
@@ -306,9 +272,7 @@ export function WorkSection() {
         {projects.map((project) => (
           <article
             key={project.slug}
-            className={`work-row accent-${project.accent} ${project.secondary ? "secondary" : ""} ${
-              boostedProjectSlug === project.slug ? "dragon-boost" : ""
-            }`}
+            className={`work-row accent-${project.accent} ${project.secondary ? "secondary" : ""}`}
             data-project-slug={project.slug}
             role="link"
             tabIndex={0}

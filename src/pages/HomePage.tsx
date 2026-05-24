@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Mascot } from "../components/Mascot";
+import { GokuCompanion } from "../components/GokuCompanion";
+import { OrbitPlanets } from "../components/OrbitPlanets";
 import { WorkSection } from "../components/WorkSection";
 
 export function HomePage() {
@@ -13,8 +14,9 @@ export function HomePage() {
 
   return (
     <main id="hey">
-      <Mascot />
+      <GokuCompanion />
       <section className="hero" aria-labelledby="hero-title">
+        <OrbitPlanets />
         <div className="hero-copy">
           <h1 id="hero-title" className="reveal">
             Messy problems, working systems.

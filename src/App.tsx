@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import gsap from "gsap";
@@ -11,13 +11,9 @@ import { ProjectDetailPage } from "./pages/ProjectDetailPage";
 
 
 function CustomCursor() {
-  const [isOverRing, setIsOverRing] = useState(false);
-  const [cursorLabel, setCursorLabel] = useState("JUMP");
   const dotRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
   const targetPos = useRef({ x: -200, y: -200 });
   const currentPos = useRef({ x: -200, y: -200 });
-  const isOverRingRef = useRef(false);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -40,10 +36,6 @@ function CustomCursor() {
         dotRef.current.style.left = `${currentPos.current.x}px`;
         dotRef.current.style.top = `${currentPos.current.y}px`;
       }
-      if (ringRef.current && isOverRingRef.current) {
-        ringRef.current.style.left = `${currentPos.current.x}px`;
-        ringRef.current.style.top = `${currentPos.current.y}px`;
-      }
 
       rafRef.current = requestAnimationFrame(animate);
     };
@@ -54,57 +46,19 @@ function CustomCursor() {
     };
   }, []);
 
-  useEffect(() => {
-    const handleRingHover = (e: CustomEvent) => {
-      const active = typeof e.detail === "object" ? Boolean(e.detail.active) : Boolean(e.detail);
-      const label = typeof e.detail === "object" && typeof e.detail.label === "string" ? e.detail.label : "JUMP";
-
-      isOverRingRef.current = active;
-      setIsOverRing(active);
-      setCursorLabel(label);
-
-      if (active && ringRef.current) {
-        // Snap ring to current cursor position immediately on first hover
-        ringRef.current.style.left = `${targetPos.current.x}px`;
-        ringRef.current.style.top = `${targetPos.current.y}px`;
-        currentPos.current.x = targetPos.current.x;
-        currentPos.current.y = targetPos.current.y;
-      }
-    };
-
-    window.addEventListener("ringHover", handleRingHover as EventListener);
-    return () => window.removeEventListener("ringHover", handleRingHover as EventListener);
-  }, []);
-
   return (
-    <>
-      <div
-        ref={dotRef}
-        className={`custom-cursor-dot${isOverRing ? " hidden" : ""}`}
-        style={{
-          position: "fixed",
-          left: -200,
-          top: -200,
-          pointerEvents: "none",
-          zIndex: 9999,
-          transform: "translate(-50%, -50%)"
-        }}
-      />
-      <div
-        ref={ringRef}
-        className={`custom-cursor-ring${isOverRing ? " visible" : ""}`}
-        style={{
-          position: "fixed",
-          left: -200,
-          top: -200,
-          pointerEvents: "none",
-          zIndex: 9999,
-          transform: "translate(-50%, -50%)"
+    <div
+      ref={dotRef}
+      className="custom-cursor-dot"
+      style={{
+        position: "fixed",
+        left: -200,
+        top: -200,
+        pointerEvents: "none",
+        zIndex: 9999,
+        transform: "translate(-50%, -50%)"
       }}
-      >
-        {cursorLabel}
-      </div>
-    </>
+    />
   );
 }
 
