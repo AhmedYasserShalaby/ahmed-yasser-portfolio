@@ -13,8 +13,8 @@ export function HomePage() {
 
   return (
     <main id="hey">
+      <Mascot />
       <section className="hero" aria-labelledby="hero-title">
-        <Mascot />
         <div className="hero-copy">
           <h1 id="hero-title" className="reveal">
             Messy problems, working systems.

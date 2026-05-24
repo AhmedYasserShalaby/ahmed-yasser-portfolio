@@ -12,6 +12,7 @@ import { ProjectDetailPage } from "./pages/ProjectDetailPage";
 
 function CustomCursor() {
   const [isOverRing, setIsOverRing] = useState(false);
+  const [cursorLabel, setCursorLabel] = useState("JUMP");
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const targetPos = useRef({ x: -200, y: -200 });
@@ -55,10 +56,14 @@ function CustomCursor() {
 
   useEffect(() => {
     const handleRingHover = (e: CustomEvent) => {
-      isOverRingRef.current = e.detail;
-      setIsOverRing(e.detail);
+      const active = typeof e.detail === "object" ? Boolean(e.detail.active) : Boolean(e.detail);
+      const label = typeof e.detail === "object" && typeof e.detail.label === "string" ? e.detail.label : "JUMP";
 
-      if (e.detail && ringRef.current) {
+      isOverRingRef.current = active;
+      setIsOverRing(active);
+      setCursorLabel(label);
+
+      if (active && ringRef.current) {
         // Snap ring to current cursor position immediately on first hover
         ringRef.current.style.left = `${targetPos.current.x}px`;
         ringRef.current.style.top = `${targetPos.current.y}px`;
@@ -95,9 +100,9 @@ function CustomCursor() {
           pointerEvents: "none",
           zIndex: 9999,
           transform: "translate(-50%, -50%)"
-        }}
+      }}
       >
-        ROTATE ME
+        {cursorLabel}
       </div>
     </>
   );
