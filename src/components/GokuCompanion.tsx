@@ -1,40 +1,73 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import guideIdle from "../../assets/dragon-guide/guide-idle.png";
+import guideIdle2x from "../../assets/dragon-guide/guide-idle@2x.webp";
+import guideIdle3x from "../../assets/dragon-guide/guide-idle@3x.webp";
 import guideWave from "../../assets/dragon-guide/guide-wave.png";
+import guideWave2x from "../../assets/dragon-guide/guide-wave@2x.webp";
+import guideWave3x from "../../assets/dragon-guide/guide-wave@3x.webp";
 import guidePoint from "../../assets/dragon-guide/guide-point.png";
+import guidePoint2x from "../../assets/dragon-guide/guide-point@2x.webp";
+import guidePoint3x from "../../assets/dragon-guide/guide-point@3x.webp";
 import guidePower from "../../assets/dragon-guide/guide-power.png";
+import guidePower2x from "../../assets/dragon-guide/guide-power@2x.webp";
+import guidePower3x from "../../assets/dragon-guide/guide-power@3x.webp";
 import guideCelebrate from "../../assets/dragon-guide/guide-celebrate.png";
+import guideCelebrate2x from "../../assets/dragon-guide/guide-celebrate@2x.webp";
+import guideCelebrate3x from "../../assets/dragon-guide/guide-celebrate@3x.webp";
 import { useActiveSection } from "../hooks/useActiveSection";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 
 type Pose = "idle" | "wave" | "point" | "power" | "celebrate";
 
-const poseImages: Record<Pose, string> = {
-  idle: guideIdle,
-  wave: guideWave,
-  point: guidePoint,
-  power: guidePower,
-  celebrate: guideCelebrate,
+const SECTION_SPEECH_DURATION_MS = 15000;
+const POWER_SPEECH_DURATION_MS = 9000;
+const QUOTE_SPEECH_DURATION_MS = 11000;
+const CELEBRATE_SPEECH_DURATION_MS = 9000;
+
+type PoseImage = {
+  src: string;
+  srcSet: string;
+};
+
+const poseImages: Record<Pose, PoseImage> = {
+  idle: {
+    src: guideIdle,
+    srcSet: `${guideIdle} 1x, ${guideIdle2x} 2x, ${guideIdle3x} 3x`,
+  },
+  wave: {
+    src: guideWave,
+    srcSet: `${guideWave} 1x, ${guideWave2x} 2x, ${guideWave3x} 3x`,
+  },
+  point: {
+    src: guidePoint,
+    srcSet: `${guidePoint} 1x, ${guidePoint2x} 2x, ${guidePoint3x} 3x`,
+  },
+  power: {
+    src: guidePower,
+    srcSet: `${guidePower} 1x, ${guidePower2x} 2x, ${guidePower3x} 3x`,
+  },
+  celebrate: {
+    src: guideCelebrate,
+    srcSet: `${guideCelebrate} 1x, ${guideCelebrate2x} 2x, ${guideCelebrate3x} 3x`,
+  },
 };
 
 const sectionCommentary: Record<string, string[]> = {
   hey: [
-    "You just landed. This guy turns messy problems into working systems.",
-    "Welcome! Ahmed builds things that actually work. Wild concept, right?",
-    "First impression zone. Try not to scroll too fast — I get dizzy.",
+    "Welcome. I checked the systems. Somehow, they work.",
+    "Ahmed builds clean systems from messy business chaos.",
   ],
   about: [
-    "Quiet builder energy. Structure first, polish second.",
-    "Business Informatics student. Yes, that's a real thing.",
-    "He likes the work before the shiny screenshot. Weird flex, but OK.",
+    "Business Informatics. Half business, half debugging reality.",
+    "He likes structure. Suspiciously healthy habit.",
   ],
   work: [
-    "These projects actually run. Not screenshot theater.",
-    "Real data pipelines, real dashboards, real tests. No cap.",
-    "Each project here was built solo. Respect the grind.",
+    "Real pipelines. Real dashboards. Real late nights.",
+    "No fake screenshots here. Mostly.",
   ],
   contact: [
     "Good timing — he actually answers email.",
+    "You made it to contact. Bold move.",
     "End of the page. Time to send that message!",
     "You scrolled all the way down. That's dedication. Hire him.",
   ],
@@ -72,6 +105,8 @@ export function GokuCompanion() {
 
   const poseTimeoutRef = useRef<number | null>(null);
   const speechTimeoutRef = useRef<number | null>(null);
+  const containerRef = useRef<HTMLElement | null>(null);
+  const lastPointerInteractionRef = useRef(0);
   const lastScrollYRef = useRef(0);
   const scrollVelocityRef = useRef(0);
   const fallTimeoutRef = useRef<number | null>(null);
@@ -92,7 +127,7 @@ export function GokuCompanion() {
     if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
     speechTimeoutRef.current = window.setTimeout(() => {
       setShowSpeech(false);
-    }, 6000);
+    }, SECTION_SPEECH_DURATION_MS);
 
     // Wave when arriving at a new section (not on mount)
     if (isMountedRef.current && !isSuperSaiyan) {
@@ -143,6 +178,33 @@ export function GokuCompanion() {
     };
   }, [reducedMotion, isFalling]);
 
+  useEffect(() => {
+    function updateViewportOffsets() {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const viewport = window.visualViewport;
+      const visualWidth = viewport?.width ?? document.documentElement.clientWidth;
+      const visualHeight = viewport?.height ?? document.documentElement.clientHeight;
+      const rightOffset = Math.max(0, window.innerWidth - visualWidth - (viewport?.offsetLeft ?? 0));
+      const bottomOffset = Math.max(0, window.innerHeight - visualHeight - (viewport?.offsetTop ?? 0));
+
+      container.style.setProperty("--visual-viewport-right-offset", `${rightOffset}px`);
+      container.style.setProperty("--visual-viewport-bottom-offset", `${bottomOffset}px`);
+    }
+
+    updateViewportOffsets();
+    window.addEventListener("resize", updateViewportOffsets);
+    window.visualViewport?.addEventListener("resize", updateViewportOffsets);
+    window.visualViewport?.addEventListener("scroll", updateViewportOffsets);
+
+    return () => {
+      window.removeEventListener("resize", updateViewportOffsets);
+      window.visualViewport?.removeEventListener("resize", updateViewportOffsets);
+      window.visualViewport?.removeEventListener("scroll", updateViewportOffsets);
+    };
+  }, []);
+
   const flashPose = useCallback(
     (p: Pose, duration = 1500) => {
       if (poseTimeoutRef.current) clearTimeout(poseTimeoutRef.current);
@@ -158,7 +220,7 @@ export function GokuCompanion() {
     [reducedMotion],
   );
 
-  function handleClick() {
+  function handleInteraction() {
     const nextCount = clickCount + 1;
     setClickCount(nextCount);
 
@@ -168,7 +230,7 @@ export function GokuCompanion() {
     if (phase === 1) {
       // Super Saiyan!
       setIsSuperSaiyan(true);
-      flashPose("power", 2500);
+      flashPose("power", POWER_SPEECH_DURATION_MS);
       const line =
         superSaiyanLines[Math.floor(Math.random() * superSaiyanLines.length)];
       setSpeech(line);
@@ -178,7 +240,7 @@ export function GokuCompanion() {
       speechTimeoutRef.current = window.setTimeout(() => {
         setIsSuperSaiyan(false);
         setShowSpeech(false);
-      }, 2500);
+      }, POWER_SPEECH_DURATION_MS);
     } else if (phase === 2) {
       // Funny quote
       flashPose("point", 2000);
@@ -190,7 +252,7 @@ export function GokuCompanion() {
       if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
       speechTimeoutRef.current = window.setTimeout(() => {
         setShowSpeech(false);
-      }, 3000);
+      }, QUOTE_SPEECH_DURATION_MS);
     } else {
       // Celebrate
       flashPose("celebrate", 1800);
@@ -200,8 +262,18 @@ export function GokuCompanion() {
       if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
       speechTimeoutRef.current = window.setTimeout(() => {
         setShowSpeech(false);
-      }, 2500);
+      }, CELEBRATE_SPEECH_DURATION_MS);
     }
+  }
+
+  function handlePointerUp() {
+    lastPointerInteractionRef.current = Date.now();
+    handleInteraction();
+  }
+
+  function handleClick() {
+    if (Date.now() - lastPointerInteractionRef.current < 500) return;
+    handleInteraction();
   }
 
   // Cleanup on unmount
@@ -224,8 +296,10 @@ export function GokuCompanion() {
 
   return (
     <aside
+      ref={containerRef}
       className={containerClass}
       aria-label="Goku companion"
+      data-active-section={activeSection}
       data-testid="goku-companion"
     >
       {/* Speech bubble */}
@@ -241,12 +315,15 @@ export function GokuCompanion() {
         type="button"
         className={`goku-sprite-btn pose-${pose}`}
         onClick={handleClick}
+        onPointerUp={handlePointerUp}
         aria-label="Interact with Goku"
       >
         <img
           className="goku-sprite"
-          src={poseImages[pose]}
+          src={poseImages[pose].src}
+          srcSet={poseImages[pose].srcSet}
           alt=""
+          decoding="async"
           draggable="false"
         />
       </button>

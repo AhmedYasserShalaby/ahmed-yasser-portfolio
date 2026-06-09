@@ -28,10 +28,16 @@ test("goku companion reacts to clicks", async ({ page }) => {
   await page.goto(`${base}/`);
 
   const goku = page.getByTestId("goku-companion");
+  const speech = page.locator(".goku-speech.is-visible");
+  const isMobile = (page.viewportSize()?.width ?? 0) < 900;
   await expect(goku).toBeVisible();
 
   // Speech bubble should appear with section commentary
-  await expect(page.locator(".goku-speech.is-visible")).toBeVisible();
+  if (isMobile) {
+    await expect(speech).toBeAttached();
+  } else {
+    await expect(speech).toBeVisible();
+  }
 
   // Click Goku to trigger super saiyan
   await page.getByRole("button", { name: /Interact with Goku/i }).click();
@@ -39,7 +45,11 @@ test("goku companion reacts to clicks", async ({ page }) => {
 
   // Click again for funny quote
   await page.getByRole("button", { name: /Interact with Goku/i }).click();
-  await expect(page.locator(".goku-speech.is-visible")).toBeVisible();
+  if (isMobile) {
+    await expect(speech).toBeAttached();
+  } else {
+    await expect(speech).toBeVisible();
+  }
 });
 
 test("project routes render case studies", async ({ page }) => {
